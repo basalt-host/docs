@@ -12,6 +12,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "cnfast": "^0.0.8",
     "fumadocs-core": "16.11.5",
