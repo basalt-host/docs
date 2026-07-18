@@ -1,0 +1,60 @@
+---
+title: What is Basalt?
+description: A self-hosted platform for running game servers on your own hardware.
+---
+
+Basalt is a **self-hosted game server platform**. You install it on hardware you control (a
+homelab box, a spare PC, a VPS or your company’s datacenter) and it gives you a modern web panel to deploy, manage and share
+game servers running as Docker containers.
+
+Think of it as your own private game hosting company, minus the monthly invoice for every server.
+
+## Why Basalt?
+
+- **Your hardware, your data.** Worlds, configs, backups and the database never leave machines you
+  control.
+- **Docker-native.** Every server runs in its own container. The platform itself deploys with
+  Docker Compose.
+- **Template-driven.** Servers are described by JSON templates that generate rich settings forms:
+  no hand-editing config files to get started.
+- **Made for sharing.** Invite friends or teammates, scope their permissions with roles, and expose servers to
+  the internet through playit.gg tunnels without port forwarding.
+
+## The moving parts
+
+A Basalt installation is made of four pieces:
+
+| Component     | What it does                                                                    |
+| ------------- | ------------------------------------------------------------------------------- |
+| **Web panel** | The Next.js app you interact with: dashboards, console, file browser, settings. |
+| **Backend**   | The API server. Owns users, permissions, templates and orchestration.           |
+| **Daemon**    | A small agent installed on each node. Talks to Docker to run instances.         |
+| **SurrealDB** | The database behind the backend.                                                |
+
+You can run everything on a single machine, or spread nodes across as many machines as your plan
+allows.
+
+## Where to go next
+
+<Cards>
+  <Card
+    title="Installation"
+    description="Deploy the Basalt stack with Docker Compose."
+    href="/docs/getting-started/installation"
+  />
+  <Card
+    title="Your first instance"
+    description="From empty panel to a running Minecraft server."
+    href="/docs/getting-started/first-instance"
+  />
+  <Card
+    title="Core concepts"
+    description="Instances, nodes and templates, and how they fit together."
+    href="/docs/concepts/architecture"
+  />
+  <Card
+    title="Write a template"
+    description="Bring any game that runs in Docker to Basalt."
+    href="/docs/templates"
+  />
+</Cards>

@@ -1,0 +1,61 @@
+---
+title: Share your game server without port forwarding
+description: Why "just open port 25565" often fails in 2026, and how tunnels get your friends connected in minutes.
+date: 2026-07-08
+tags: [guide, networking]
+---
+
+You set up the server. It runs. You send your friend your IP address and... nothing. Connection
+timed out. Welcome to the most common failure in self-hosted game servers: getting traffic from
+the internet to the machine under your desk.
+
+## Why port forwarding fails so often
+
+The classic advice is to forward a port on your router. That still works for some people, but it
+fails more every year, for reasons outside your control:
+
+- **CGNAT.** Many ISPs now put whole neighborhoods behind one public IP (carrier-grade NAT).
+  There is no port to forward, because the public IP is not yours. Fiber and 5G providers do this
+  a lot.
+- **Router roulette.** Every router hides port forwarding somewhere different, and ISP-managed
+  boxes sometimes lock it away entirely.
+- **Moving targets.** Home IPs change. Your friends' saved server address stops working the day
+  your ISP rotates it.
+- **Exposure.** A forwarded port is an open door to your home network that you now have to think
+  about.
+
+## Tunnels flip the direction
+
+A tunnel solves all four problems with one trick: instead of the internet connecting _in_ to
+you, your server connects _out_ to a relay with a stable public address. Outbound connections
+are never blocked by NAT; that's the same reason your browser works without router changes.
+
+[playit.gg](https://playit.gg) is a free service built exactly for this, and Basalt integrates
+it directly. When a template supports it, enabling a tunnel is a toggle on the instance page:
+Basalt runs the playit agent alongside the game container and shows you the public address your
+friends should use.
+
+<MediaPlaceholder
+  label="Playit tunnel setup screencast"
+  hint="Enabling the tunnel toggle, then the public address appearing"
+/>
+
+## What it looks like in practice
+
+1. Deploy an instance from a template with playit enabled (the official Minecraft template is).
+2. Open the instance's **Network** section and enable the tunnel.
+3. Copy the public address (something like `something.playit.gg:12345`) and send it to your
+   friends.
+
+That address stays stable across restarts and does not care what your home IP is doing. Your
+router config stays untouched, and the only machine exposed is the relay, not your network.
+
+## When you don't need a tunnel
+
+If your server only needs to be reachable from your own network (a LAN party, a home lab behind
+a VPN like Tailscale, or a machine in a datacenter with a real public IP), skip the tunnel and
+connect directly. Tunnels are for the public-internet case, and they add a relay hop that direct
+connections don't have.
+
+Read more in the [playit guide](/docs/guides/playit), or start from
+[your first instance](/docs/getting-started/first-instance) if you haven't deployed one yet.

@@ -1,0 +1,51 @@
+---
+title: First run
+description: Create the owner account and get oriented in the panel.
+---
+
+With the stack running, open your panel URL. On a fresh database Basalt has no users yet, so the
+first thing it asks for is an **owner account**.
+
+## Create the owner
+
+There are two ways to bootstrap the owner:
+
+<Tabs items={["Setup form", "Environment variables"]}>
+  <Tab value="Setup form">
+    Visit the panel in your browser. On first visit you'll see the
+    owner-creation form: pick an e-mail and password and you're in. The form
+    disappears once the database is bootstrapped.
+  </Tab>
+  <Tab value="Environment variables">
+    Set `BASALT_ADMIN_EMAIL` and `BASALT_ADMIN_PASSWORD` on the **backend**
+    before the first start. The account is created automatically and becomes the
+    owner. Both variables are ignored once the database has been bootstrapped,
+    so you can remove them afterwards.
+  </Tab>
+</Tabs>
+
+The owner has every permission and cannot be locked out by role changes. Use it to set up the
+platform, then create day-to-day accounts with narrower permissions.
+
+## A quick tour
+
+After signing in you'll land on the dashboard. The sidebar gives you:
+
+- **Instances**: your game servers. Empty for now.
+- **Nodes**: machines that can run instances. Also empty until you [connect one](/docs/getting-started/connect-a-node).
+- **Backups**: archives across all instances.
+- **Users**: accounts, roles and invites.
+- **Settings**: platform settings, roles and template registration.
+
+Press <kbd>⌘K</kbd> (or <kbd>Ctrl K</kbd>) anywhere to open the command palette and jump straight
+to any instance, node or page.
+
+## Next steps
+
+<Cards>
+  <Card
+    title="Connect a node"
+    description="Give the panel somewhere to run servers."
+    href="/docs/getting-started/connect-a-node"
+  />
+</Cards>

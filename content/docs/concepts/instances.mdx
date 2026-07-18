@@ -1,0 +1,69 @@
+---
+title: Instances
+description: What an instance is, its lifecycle, and what you can do with one.
+---
+
+An **instance** is a single game server: one template, one node, one Docker container. If you run
+a survival world and a creative world, that's two instances, even if they share a node.
+
+## Anatomy of an instance
+
+Every instance is created from a [template](/docs/concepts/templates) and carries:
+
+- **Configuration**: the values you set in the template's settings form, stored as the
+  container's environment.
+- **A deployed snapshot**: the exact template version and configuration that is currently
+  running. Editing settings doesn't touch the live server until you re-deploy.
+- **A container**: created and managed by the daemon on the instance's node.
+
+## Lifecycle
+
+```
+create ──▶ deploy ──▶ running ⇄ stopped ──▶ delete
+              ▲                    │
+              └── re-deploy ◀──────┘
+```
+
+- **Deploy** pulls the image, creates the container from the current configuration and starts it.
+- **Start / stop / restart** operate on the existing container without changing configuration.
+- **Re-deploy** replaces the container to apply new settings or a new template version. Data in
+  the server's volumes survives; the container itself is disposable.
+- **Delete** removes the container and the instance. Backups outlive the instance.
+
+The panel shows live status transitions as they happen. No refreshing.
+
+## Working with an instance
+
+Each instance page gives you tabs for day-to-day operations:
+
+<Cards>
+  <Card
+    title="Console"
+    description="Live logs and server commands."
+    href="/docs/guides/console"
+  />
+  <Card
+    title="Files"
+    description="Browse, edit and upload server files."
+    href="/docs/guides/files"
+  />
+  <Card
+    title="Backups"
+    description="Archives, policies and restores."
+    href="/docs/guides/backups"
+  />
+  <Card
+    title="Playit"
+    description="Public address without port forwarding."
+    href="/docs/guides/playit"
+  />
+</Cards>
+
+Plus **Environment** for reviewing and overriding configuration, and **Settings** for renaming,
+version changes and lifecycle actions.
+
+## Permissions
+
+Everything above is permission-gated per instance; a user might see the console on one instance
+and only the status badge on another. See
+[access control](/docs/guides/access-control).

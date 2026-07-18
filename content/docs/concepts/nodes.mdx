@@ -1,0 +1,47 @@
+---
+title: Nodes
+description: Machines that run your instances, managed by the Basalt daemon.
+---
+
+A **node** is a machine registered in Basalt: anything from a Raspberry-class box to a beefy
+dedicated server. Each node runs the Basalt **daemon**, which the backend drives over RPC using a
+per-node API key.
+
+## Node status
+
+The backend continuously health-checks every node and shows one of four states:
+
+| Status         | Meaning                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------- |
+| `ONLINE`       | Daemon reachable and protocol-compatible.                                                   |
+| `OFFLINE`      | Daemon unreachable: machine down, network issue or daemon stopped.                          |
+| `UNKNOWN`      | Not checked yet (e.g. freshly added).                                                       |
+| `INCOMPATIBLE` | Daemon reachable but its protocol version doesn't match the backend; update the older side. |
+
+Instances on an offline node keep running if the machine itself is up; Basalt just can't manage
+them until the daemon is reachable again.
+
+## Live metrics
+
+Node pages stream live host and Docker metrics (platform, architecture, uptime, resource usage
+and container counts), so you can tell at a glance whether a node has headroom for another
+instance.
+
+## The API key
+
+The daemon generates its API key on first start and stores it at
+`~/.config/basalt/daemon/api.key` (inside the container unless you mount it). Registering a node
+means telling the backend the daemon's address and this key.
+
+Rotating a key is as simple as deleting the key file, restarting the daemon and updating the node
+in the panel with the newly printed key.
+
+## Adding capacity
+
+Scaling out is deliberately boring: install the daemon on another machine, add it as a node,
+deploy instances to it. Nothing else changes: templates, permissions and backups work identically
+across nodes.
+
+<Callout type="info" title="Plan limits">
+  The free tier includes one node. Pro and Enterprise raise the node limit.
+</Callout>

@@ -1,0 +1,55 @@
+---
+title: "Meet Basalt: game servers on your own hardware, without the hassle"
+description: Why we built a self-hosted panel for game servers, and what it does for you on day one.
+date: 2026-07-15
+tags: [announcement]
+---
+
+Running a game server for your friends has always involved a choice between two bad options.
+
+Option one: rent from a hosting company. It works, but you pay every month for hardware weaker
+than the PC in your closet, and the moment your friends want mods, more RAM or a second server,
+the bill grows.
+
+Option two: self-host. Now the hardware is yours and free, but so is the ops work. You are the
+one SSH-ing in at midnight because the server crashed, explaining port forwarding to your router,
+and being the single person who knows how anything works.
+
+Basalt exists to make option two feel like option one. You keep your hardware, your worlds and
+your data; Basalt adds the panel on top.
+
+<MediaPlaceholder
+  label="Panel overview screencast"
+  hint="Dashboard with a running Minecraft instance"
+/>
+
+## What you get
+
+- **Deploy from templates.** Pick Minecraft or Hytale, fill in a settings form, and Basalt runs
+  the right Docker container with the right flags. No Dockerfile knowledge required.
+- **A live console, in the browser.** Logs stream in real time and commands go straight to the
+  server. Your moderator friend never needs SSH.
+- **Files, backups and schedules.** Browse the server's files, archive the world before a risky
+  mod install, and let backup policies handle the routine.
+- **Public access without port forwarding.** Built-in [playit.gg](https://playit.gg) tunnels give
+  your server a public address even behind CGNAT.
+- **Real access control.** Users, roles and per-resource permissions mean you can hand out
+  exactly the access each person needs, whether that's two friends or a whole team.
+
+## Who it's for
+
+The same panel scales from a Raspberry Pi in a dorm room to a rack shared by a studio. The free
+tier covers the friends-server case: 2 user seats, 2 instance seats and 1 node. Pro and
+Enterprise raise the limits when a community or company outgrows them.
+
+## Get started
+
+Basalt ships as Docker containers. If you have Docker installed, you are one compose file away:
+
+```bash
+docker compose up -d
+```
+
+The [installation guide](/docs/getting-started/installation) walks through the full setup,
+including secrets and first login. If you hit anything rough, tell us on
+[GitHub](https://github.com/basalt-host/basalt); this is exactly the feedback we want right now.

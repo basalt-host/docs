@@ -1,0 +1,46 @@
+---
+title: Backups
+description: Targets, policies and restores. Protecting your worlds automatically.
+---
+
+Basalt's backup system is built from three pieces: **targets** (what can be archived), **policies**
+(when it happens automatically) and the **archives** themselves.
+
+## Backup targets
+
+Templates declare which container paths are worth backing up; for Minecraft that's things like
+the world folder or the whole data directory. Each target has a label, so in the panel you pick
+"World" rather than remembering `/data/world`.
+
+## Manual backups
+
+On the instance's **Backups** tab, choose a target and hit backup. The daemon archives the path on
+the node and the backup appears in the list, ready to download or restore. Manual backups are
+great right before a risky mod install.
+
+## Backup policies
+
+For everything else, set a policy: pick a target, a schedule, and let the backend's scheduler do
+the remembering. Policies are configured per instance, and the **Backups** page in the sidebar
+shows archives across all instances in one place.
+
+## Encryption
+
+Backup archives are encrypted at rest using the backend's `BACKUP_ENCRYPTION_KEY`.
+
+<Callout type="warn" title="Guard that key">
+  Losing `BACKUP_ENCRYPTION_KEY` means losing the ability to restore existing
+  backups. Store it in your password manager alongside your other Basalt
+  secrets.
+</Callout>
+
+## Restores
+
+Restoring unpacks an archive back to its container path. Stop the instance first if the game is
+actively writing to the files being restored; restoring a world under a running server is asking
+for corruption.
+
+## Where archives live
+
+Archives are stored on the node, under the daemon's backups directory (`BASALT_BACKUPS_DIR`).
+Mount that directory onto storage you trust: a RAID volume, NAS mount or backed-up disk.

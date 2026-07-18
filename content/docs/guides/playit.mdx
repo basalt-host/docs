@@ -1,0 +1,39 @@
+---
+title: Playit tunnels
+description: Give your server a public address without port forwarding.
+---
+
+The classic self-hosting wall: the server runs great, but your friends can't join because you're
+behind NAT, CGNAT, or a router you're not allowed to touch. Basalt integrates
+[playit.gg](https://playit.gg) tunnels to knock that wall down.
+
+## How it works
+
+playit.gg runs a network of public tunnel servers. Your instance makes an **outbound** connection
+to that network, and players connect to a public playit address that forwards traffic back through
+the tunnel. Because the connection is outbound, no ports need to be opened on your side.
+
+## Enabling a tunnel
+
+Templates opt in to playit support and declare the game port and protocol (TCP, UDP or both). For
+a playit-enabled template:
+
+1. Open the instance's **Playit** tab.
+2. Enable the tunnel.
+3. Copy the public address and share it with your players.
+
+That's it: no router config, no dynamic DNS, no VPN mesh to babysit.
+
+## When to use what
+
+| Situation                                             | Recommendation                                 |
+| ----------------------------------------------------- | ---------------------------------------------- |
+| Friends on your LAN                                   | Direct connection to the node's local address. |
+| You control the router                                | Port forwarding gives the most direct route.   |
+| CGNAT, dorms, offices, rented boxes without extra IPs | Playit tunnel.                                 |
+
+<Callout type="info" title="Template support">
+  If the Playit tab isn't offered on an instance, its template doesn't declare
+  playit settings. Template authors can add them; see [template
+  authoring](/docs/templates/backups-and-playit).
+</Callout>

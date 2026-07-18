@@ -1,0 +1,40 @@
+---
+title: File browser & editor
+description: Browse, edit and upload instance files with template-defined guardrails.
+---
+
+The **Files** tab gives you direct access to an instance's files inside its container, with
+guardrails, because a mistyped delete in the wrong folder can end a world.
+
+## Browsing
+
+The file browser is scoped by the instance's template:
+
+- **Root folder**: you browse the game's data directory, not the whole container filesystem.
+- **Hidden paths**: internals the template author chose to keep out of sight don't show up
+  at all.
+- **Read-only paths**: critical files and folders can be opened but not modified or deleted.
+
+Everything else supports the operations you'd expect: create, rename, move, delete, upload and
+download.
+
+## Editing
+
+Text files open in a built-in editor with syntax highlighting, handy for `server.properties`,
+YAML configs, scripts and the occasional JSON file. Saving writes straight back to the container
+through the daemon.
+
+<Callout type="warn" title="Live servers read configs at boot">
+  Most game servers only read configuration at startup. After editing a config,
+  restart the instance for changes to take effect.
+</Callout>
+
+## Uploads
+
+Drag and drop files to upload: mod jars, plugin folders, world imports. The maximum upload size
+is controlled by the backend's `UPLOAD_MAX_BYTES` (2 GiB by default).
+
+## Permissions
+
+File access is permission-gated per instance, separately from the console, so you can give a
+builder file access without console commands, or the reverse.

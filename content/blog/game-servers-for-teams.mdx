@@ -1,0 +1,69 @@
+---
+title: Running game servers for a team, not just for friends
+description: Roles, per-resource permissions and multi-node setups. How the same panel scales from a friends server to a studio.
+date: 2026-06-12
+tags: [guide, access-control]
+---
+
+Most game server panels assume one of two extremes: a single admin who does everything, or a
+full hosting company with billing and support tiers. Real groups live in between. A modded
+community with volunteer moderators. A studio running playtest servers for three teams. An
+esports org with staging and production environments. What they share is one requirement:
+**not everyone should be able to do everything.**
+
+## Permissions that match how groups work
+
+Basalt's access model has four building blocks: users, permissions, roles and invites.
+
+Permissions are fine-grained keys (create instances, open the console, manage files) and they
+can be granted at two levels:
+
+- **Globally**: "Alex can manage all nodes."
+- **Per resource**: "Sam gets console access on the playtest server, and nothing else."
+
+The per-resource part is what makes shared setups safe. Your moderators can restart the
+Minecraft server and read its console without being able to touch the files of the internal
+build server running next to it.
+
+## Roles keep it maintainable
+
+Granting permissions user-by-user works for three people and collapses at ten. Roles bundle a
+permission set under a name, and users hold roles:
+
+| Role          | Typical grant                                            |
+| ------------- | -------------------------------------------------------- |
+| **Admin**     | Everything on all instances and nodes.                   |
+| **Moderator** | Console and lifecycle on game instances, no file access. |
+| **Guest**     | View status only.                                        |
+
+Change the role once and everyone holding it updates. When someone leaves, remove the user and
+their access goes with them, everywhere.
+
+<MediaPlaceholder
+  label="Role editor screencast"
+  hint="Creating a Moderator role and assigning it to a user"
+/>
+
+## Onboarding without shared passwords
+
+Adding someone is an e-mailed invite, not a password in a chat log. They set their own
+credentials and land in the panel holding exactly the roles you attached to the invite. Password
+resets flow through e-mail the same way. Configure `MAIL_PROVIDER=resend` in production; the
+default `log` provider prints mails to the backend log for dev setups.
+
+## One panel, many machines
+
+Teams usually outgrow one machine before they outgrow one panel. Basalt's answer is **nodes**: a
+lightweight daemon on each machine you own, all managed from the same panel. Deploy the build
+server on the office rack and the playtest server on a cloud VM, and give each team access to
+exactly their instances.
+
+Since access is enforced by the backend, the panel stays a single source of truth: one user list,
+one audit trail of who can do what, across all hardware.
+
+## Where the free tier ends
+
+The free tier includes 2 user seats, 2 instance seats and 1 node: right-sized for a friends
+server. Teams and studios are what Pro and Enterprise are for; they raise seats, instances and
+node counts. See [pricing](/#pricing) for details, and the
+[access control guide](/docs/guides/access-control) for the full permission reference.

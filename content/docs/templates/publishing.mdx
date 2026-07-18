@@ -1,0 +1,48 @@
+---
+title: Publishing templates
+description: Register templates from JSON or a Git repository.
+---
+
+Templates get into a Basalt installation through **Settings → Templates**. There are two paths.
+
+## Register from JSON
+
+Paste or upload the template file directly. Basalt validates it against the schema and, if it
+passes, the template appears in the picker immediately.
+
+Good for: private templates, quick iteration while authoring.
+
+## Register from Git
+
+Point Basalt at a Git repository containing template files (like
+[basalt-host/templates](https://github.com/basalt-host/templates)). Basalt reads the templates
+from the repository, and updating is a matter of refreshing from the panel after the repo changes.
+
+Good for: sharing templates with a community, keeping templates reviewed and versioned like code.
+
+<Callout type="info" title="Updates never surprise running servers">
+  Registering a newer template revision doesn't touch existing instances. Each
+  instance keeps the exact snapshot it was deployed with until someone
+  explicitly re-deploys it with the newer version.
+</Callout>
+
+## Authoring workflow
+
+A workflow that works well in practice:
+
+1. Copy a working template (the
+   [official ones](https://github.com/basalt-host/templates) are a good base) and add the
+   `$schema` reference so your editor validates as you type.
+2. Change the `id`: every template needs its own UUID (`uuidgen`).
+3. Iterate by registering the JSON directly in a dev panel and deploying a test instance.
+4. When it's stable, commit it to a Git repository and register that instead.
+5. Bump `version` on every change so installations can tell revisions apart.
+
+## Checklist before sharing
+
+- [ ] `id` is a fresh UUID, not copied from another template
+- [ ] `settings.versions` lists the game versions you actually tested
+- [ ] Defaults produce a server that boots with no field edited
+- [ ] `fileBrowser` hides internals and protects files users shouldn't edit
+- [ ] Backup targets cover the data players would cry about
+- [ ] `playit` protocol and port match the game

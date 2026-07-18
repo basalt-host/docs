@@ -1,0 +1,54 @@
+---
+title: Access control
+description: Users, roles, permissions and invites. Sharing your panel safely.
+---
+
+Basalt is built to be shared. The access model has four building blocks: **users**, **permissions**,
+**roles** and **invites**.
+
+## Users
+
+Everyone with a login. The first account, the **owner**, is created on first run and always has
+full access. Every other account starts with nothing and gains access through roles and
+permissions.
+
+## Permissions
+
+Permissions are fine-grained keys like `instance:create` or console access on a specific
+instance. They can be granted:
+
+- **Globally**: e.g. someone who can manage all nodes.
+- **Per resource**: e.g. console on _this_ instance, file access on _that_ one.
+
+The permission editor on each user's page gives you a full matrix of what they can do, and
+resource lists show you which permissions you hold on each item.
+
+## Roles
+
+Granting the same set of permissions user-by-user gets old fast. Roles bundle permissions into a
+named set ("Moderator", "Builder", "Billing") that you assign to users. Change the role, and
+everyone holding it updates with it.
+
+A practical setup for a friends server (the same pattern scales to a team or studio):
+
+| Role          | Permissions                                            |
+| ------------- | ------------------------------------------------------ |
+| **Admin**     | Everything on all instances and nodes.                 |
+| **Moderator** | Console + lifecycle on game instances, no file access. |
+| **Guest**     | View status only, enough to see if the server is up.   |
+
+## Invites
+
+Add people from **Users → Invite**. Basalt e-mails them a signed invite link; they set a password
+and land in the panel with whatever roles you attached to the invite. Password resets flow through
+e-mail the same way.
+
+<Callout type="info" title="E-mail configuration">
+  Invites and resets need outgoing e-mail. Set `MAIL_PROVIDER=resend` and
+  `RESEND_API_KEY` on the backend, or leave the default `log` provider in dev,
+  where mails are printed to the backend log.
+</Callout>
+
+## Seats
+
+User seats are a plan limit: the free tier includes two seats, Pro and Enterprise include more.
