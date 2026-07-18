@@ -1,0 +1,63 @@
+---
+title: Game server backups that actually restore
+description: A backup you have never restored is a hope, not a backup. A practical strategy for protecting worlds and configs.
+date: 2026-06-29
+tags: [guide, backups]
+---
+
+Every game server admin learns the same lesson eventually, and most learn it the hard way: the
+day a world corrupts is the day you find out whether your backups were real. Here is a strategy
+that holds up, and how Basalt automates each piece of it.
+
+## Back up the right things
+
+A game server directory is a mix of three kinds of data:
+
+- **Irreplaceable**: worlds, player data, hand-edited configs. This is what backups are for.
+- **Reproducible**: the server jar, mod files, anything a template or download can recreate.
+- **Noise**: logs, crash dumps, caches. Backing these up just makes archives slow and fat.
+
+Basalt templates encode this distinction as **backup targets**: the template author marks which
+container paths are worth archiving, with a human label. In the panel you choose "World", not
+`/data/world`, and you never accidentally archive 4 GB of logs.
+
+## Schedule for how you actually play
+
+Two rules of thumb:
+
+1. **Automate the routine.** A backup policy on a schedule protects you from the failures nobody
+   predicts. Nightly is a good default for an active server.
+2. **Snapshot before risk.** Mod installs, version upgrades, plugin experiments: take a manual
+   backup right before. It turns a catastrophe into a five-minute rollback.
+
+<MediaPlaceholder
+  label="Backup policy setup screencast"
+  hint="Creating a nightly policy for the World target"
+/>
+
+In Basalt, policies are configured per instance, and the **Backups** page shows every archive
+across all instances in one place, so "did last night's backup run?" is a glance, not an
+investigation.
+
+## Store archives on storage you trust
+
+Archives live on the node that runs the instance, under the daemon's backups directory. That
+directory is a Docker mount, which means you decide where it really points: a RAID volume, a NAS
+mount, a disk that your existing off-site backup tool already covers. A backup on the same dying
+disk as the world it protects is not a backup.
+
+Basalt encrypts archives at rest with your `BACKUP_ENCRYPTION_KEY`. Keep that key in your
+password manager: losing it means losing the ability to restore.
+
+## Actually test a restore
+
+This is the step everyone skips. Once, soon, restore a backup on purpose:
+
+1. Stop the instance (restoring under a running server invites corruption).
+2. Pick an archive on the **Backups** tab and restore it.
+3. Start the server and verify the world loads.
+
+Ten minutes, and now your backups are tested instead of assumed. Put a reminder in your calendar
+to repeat it after big changes.
+
+The full reference lives in the [backups guide](/docs/guides/backups).

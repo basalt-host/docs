@@ -1,0 +1,124 @@
+---
+title: Schema overview
+description: The top-level structure of a Basalt template.
+---
+
+A template is one JSON object, validated against
+[`template.schema.json`](https://basalt.host/schemas/template.schema.json). Reference the schema
+in your file to get editor completion:
+
+```json
+{ "$schema": "https://basalt.host/schemas/template.schema.json" }
+```
+
+## Top-level properties
+
+<TypeTable
+  type={{
+    id: {
+      description:
+        "Unique identifier for the template. Generate one with `uuidgen`.",
+      type: "string (uuid)",
+      required: true,
+    },
+    game: {
+      description:
+        'The game this template runs, e.g. "Minecraft". Used for grouping in the panel.',
+      type: "string",
+      required: true,
+    },
+    name: {
+      description: "Display name of the template.",
+      type: "string",
+      required: true,
+    },
+    description: {
+      description: "Short description shown in the template picker.",
+      type: "string",
+      required: true,
+    },
+    version: {
+      description:
+        "Template version, semver-shaped (`major.minor.patch`). Bump it when you change the template.",
+      type: "string",
+      required: true,
+    },
+    author: {
+      description: "Who maintains this template (min 3 characters).",
+      type: "string",
+      required: true,
+    },
+    logo: {
+      description: "URL of a logo image shown in the picker.",
+      type: "string (uri)",
+      required: true,
+    },
+    settings: {
+      description:
+        "Versions, settings form, file browser rules and playit config.",
+      type: "Settings",
+      required: true,
+    },
+    docker: {
+      description: "Image, environment variables and optional startup command.",
+      type: "Docker",
+      required: true,
+    },
+    backups: {
+      description: "Backup targets users can archive.",
+      type: "Backups",
+    },
+  }}
+/>
+
+No additional properties are allowed anywhere in the document; the schema is strict, which keeps
+typos from silently doing nothing.
+
+## The `settings` object
+
+<TypeTable
+  type={{
+    versions: {
+      description:
+        "Game versions this template can deploy. Shown as a version picker; at least one required.",
+      type: "string[]",
+      required: true,
+    },
+    categories: {
+      description:
+        "The settings form: a tree of categories containing fields. At least one required.",
+      type: "Category[]",
+      required: true,
+    },
+    fileBrowser: {
+      description:
+        "Scopes the file browser: rootFolder, readOnlyPaths, hiddenPaths.",
+      type: "object",
+    },
+    playit: {
+      description:
+        "Playit.gg tunnel support: enabled, protocol (tcp/udp/both), port.",
+      type: "object",
+    },
+  }}
+/>
+
+### File browser rules
+
+```json
+"fileBrowser": {
+  "rootFolder": "/data",
+  "readOnlyPaths": ["/data/eula.txt"],
+  "hiddenPaths": ["/data/libraries", "/data/.cache"]
+}
+```
+
+- `rootFolder`: where browsing starts; users never see anything above it.
+- `readOnlyPaths`: visible but protected from edits and deletion.
+- `hiddenPaths`: not shown at all.
+
+## Versioning your template
+
+`version` identifies the template revision, while `settings.versions` lists the **game** versions
+it can run; don't confuse the two. Instances record the template version they were deployed with,
+and only pick up newer revisions when re-deployed.

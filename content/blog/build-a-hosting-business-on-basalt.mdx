@@ -1,0 +1,105 @@
+---
+title: Turn Basalt into your own game-hosting business
+description: The built-in API and OpenAPI reference let you resell instances, gate access behind payment, and build a storefront on top of Basalt instead of a spreadsheet and a prayer.
+date: 2026-07-18
+tags: [guide, api]
+---
+
+Every self-hosted panel eventually gets asked the same question by someone who likes it a bit too
+much: "could I sell access to this?" A community running a beefy rack for their own Minecraft
+server gets asked by three other servers if they can rent a slot. A small agency stands up
+environments for clients and wants them self-serve instead of a Discord ticket. Someone with a spare
+machine and some technical chops realizes they've basically built a hosting company and wonders if
+it should act like one.
+
+The honest answer used to be "sort of, with duct tape." You'd create panel logins by hand, track
+who paid in a spreadsheet, and restart the right container yourself when someone messaged you at
+11pm. It works until it doesn't, usually right around customer number six.
+
+Basalt's answer is simpler: everything the panel does is also an API call, documented and callable
+from day one. You're not waiting on a "public API" roadmap item or paying for a higher tier to
+unlock automation. It's already there.
+
+## What's actually built in
+
+Every Basalt backend serves its own live API reference, no separate docs site to keep in sync:
+
+- **`/scalar`** an interactive reference generated from the routes your specific deployment is
+  running. Browse every endpoint, its request and response shapes, and fire test requests straight
+  from the browser. Just like Swagger, but better.
+- **`/docs.json`** the same thing as a plain OpenAPI 3 document. Feed it to a codegen tool, import
+  it into Postman, or just read it.
+
+Because both are generated from the backend that's actually running, they can never drift out of
+date the way hand-written API docs do. Upgrade Basalt, and the reference upgrades with it.
+
+<MediaPlaceholder
+  label="Scalar reference screenshot"
+  hint="Browsing the instances and nodes endpoints in the built-in Scalar UI"
+/>
+
+Authentication is unremarkable on purpose: sign in with `POST /api/v1/auth/sign-in` like the panel
+does, get back a bearer token, send it on every request after that. The same
+[permission model](/docs/guides/access-control) that governs human users governs API calls too, so
+a dedicated automation account holding only `instance:create` and `node:create` can provision
+servers without ever being able to touch billing, other tenants' files, or anything else.
+
+## The pattern: payment in, server out
+
+The use case that actually pays for itself is provisioning-on-payment: a customer checks out, a
+webhook fires, and a running instance exists seconds later with no human in the loop.
+
+```ts
+// 1. Verify the webhook, then sign in as your scoped automation account
+const { token } = await signIn(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
+
+// 2. Create the instance
+const instance = await createInstance(token, { nodeId, name, templateId })
+
+// 3. Create the customer's account, scoped to only that instance
+await createUser(token, {
+  email: customer.email,
+  resourcePermissions: [{ resource: instance.id, directPermissions: ["instance:read", "instance:console:read", "instance:start", "instance:stop"] }],
+})
+```
+
+That last step is the one that makes multi-tenant hosting actually safe: permissions in Basalt can
+be scoped to a single resource, not just granted globally. Your customer gets a real login that can
+start, stop and watch the console of their own server, and nothing else. A hundred customers on one
+panel never see each other's instances, files, or existence.
+
+The full walkthrough, with the exact endpoints and request bodies, is in
+[Provisioning on payment](/docs/api/provisioning-on-payment).
+
+## Who this is actually for
+
+**Communities covering their costs.** You run a good server, people want in, and a few dollars a
+month per extra slot covers the electricity bill. You don't want to build a business, you want
+`stripe webhook → basalt api call` and to go back to playing.
+
+**Small hosting resellers.** You have hardware, you have customers, and you don't want to pay a
+whitelabel SaaS a cut of every sale just to get a storefront and a provisioning API. Basalt already
+has the provisioning API. Put your own checkout page in front of it and keep the margin.
+
+**Agencies and studios.** Clients need an environment: a playtest server, a staging build, a demo
+instance. Instead of a ticket and a wait, they get a self-serve button that calls the same API you'd
+use for anything else, backed by permissions that keep each client in their own lane.
+
+## Why Basalt specifically
+
+Two things make this practical here in a way it usually isn't elsewhere:
+
+- **You own the economics.** Basalt runs on your hardware. Reselling capacity means keeping the
+  difference between what you pay for the machine and what you charge, not splitting it with a
+  hosting platform that also wants a cut of your customers.
+- **The API isn't a separate product.** There's no "developer tier" gate in front of `/scalar` and
+  `/docs.json`, and no reduced-functionality public API sitting next to a "real" internal one. It's
+  the same routes the panel calls, on every install, for free.
+
+Combine that with templates (so "what games can I sell" is a config file away, not a Dockerfile you
+write yourself) and per-resource permissions (so one panel safely serves any number of paying
+customers), and what you end up with isn't a game panel with an API bolted on. It's provisioning
+infrastructure that happens to have a nice UI too.
+
+Start with [the API reference](/docs/api) to see what's callable, then
+[Provisioning on payment](/docs/api/provisioning-on-payment) for the end-to-end example.

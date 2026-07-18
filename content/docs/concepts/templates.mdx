@@ -1,0 +1,54 @@
+---
+title: Templates
+description: JSON blueprints that turn any dockerized game into a deployable server.
+---
+
+A **template** is a JSON document that teaches Basalt how to run a game. It declares the Docker
+image, the supported versions, the environment variables and, crucially, the **settings form**
+players configure instances with. Rich UI, zero custom code.
+
+## What a template controls
+
+| Area              | What it defines                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------ |
+| **Identity**      | Name, game, description, version, author, logo.                                      |
+| **Docker**        | Image, optional startup command, environment variables.                              |
+| **Settings form** | Categories and fields: text, selects, sliders, memory pickers, conditional sections. |
+| **File browser**  | Root folder, read-only paths, hidden paths.                                          |
+| **Backups**       | Which container paths can be archived.                                               |
+| **Playit**        | Whether tunnels are offered, protocol and port.                                      |
+
+## Official templates
+
+The Basalt team maintains templates in the
+[basalt-host/templates](https://github.com/basalt-host/templates) repository:
+
+- **Minecraft**: built on the excellent `itzg/minecraft-server` image; supports server types,
+  version selection, memory, world settings, whitelist and more.
+- **Hytale**: built on the `hybrowse/hytale-server` image with auto-download and CurseForge
+  support.
+
+## Where templates come from
+
+Templates are registered in **Settings → Templates**, either by pasting/uploading **JSON** or by
+pointing Basalt at a **Git repository** that contains template files. Git-registered templates
+stay versioned like code: update the repo, refresh in the panel.
+
+## Deployed snapshots
+
+When you deploy an instance, Basalt records the exact template content used. Later template
+updates never silently change a running server; instances keep their snapshot until you
+explicitly re-deploy with the newer template version.
+
+## Write your own
+
+Any game or service that runs in a Docker container can become a template; the format is a single
+schema-validated JSON file.
+
+<Cards>
+  <Card
+    title="Template authoring"
+    description="The full guide to writing and publishing templates."
+    href="/docs/templates"
+  />
+</Cards>

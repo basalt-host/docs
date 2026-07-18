@@ -1,0 +1,114 @@
+---
+title: Provisioning on payment
+description: Use the API to create an instance and grant access the moment a customer pays.
+---
+
+A common reason to script against the API: sell access to a game server and have Basalt provision
+it automatically instead of doing it by hand. The shape is the same regardless of payment
+provider: a webhook fires, you verify it, then you call the Basalt API to do the work.
+
+<Steps>
+<Step>
+
+## Get a token for the automation account
+
+Create a dedicated user with just the permissions it needs (`node:create`, `instance:create`, see
+[Access control](/docs/guides/access-control)), then sign in as it from your webhook handler:
+
+```ts
+const auth = await fetch(`${BASALT_API_URL}/api/v1/auth/sign-in`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email: AUTOMATION_EMAIL, password: AUTOMATION_PASSWORD }),
+}).then((r) => r.json())
+
+const token = auth.token
+```
+
+</Step>
+<Step>
+
+## Find the right routes
+
+Open `/scalar` on your backend (or read `/docs.json`) and look at the `nodes` and `instances`
+tags. You'll usually only need `POST /api/v1/instances` if a node is already registered; use
+`POST /api/v1/nodes` first if the customer is meant to get dedicated infrastructure.
+
+</Step>
+<Step>
+
+## Create the instance
+
+```ts
+const instance = await fetch(`${BASALT_API_URL}/api/v1/instances`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    nodeId,
+    name: `customer-${customerId}`,
+    templateId,
+    // ...whatever the template requires, see /scalar for the full schema
+  }),
+}).then((r) => r.json())
+```
+
+</Step>
+<Step>
+
+## Hand off access
+
+Create the customer's panel account and scope its permissions to only the instance you just
+created, in the same call, using `resourcePermissions`:
+
+```ts
+const user = await fetch(`${BASALT_API_URL}/api/v1/users`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    email: customerEmail,
+    username: customerEmail,
+    name: customerName,
+    password: generateTempPassword(),
+    resourcePermissions: [
+      {
+        // instance.id from the create-instance response, e.g. "instance:8f3a..."
+        resource: instance.id,
+        directPermissions: [
+          "instance:read",
+          "instance:console:read",
+          "instance:console:write",
+          "instance:start",
+          "instance:stop",
+          "instance:restart",
+        ],
+      },
+    ],
+  }),
+}).then((r) => r.json())
+```
+
+The `resource` is the instance's record ID, exactly as returned in `instance.id`. Permissions
+listed under `resourcePermissions` only apply to that one instance, so the customer can start,
+stop and use the console for their own server without seeing anyone else's. This needs the
+automation account to hold `user:create`.
+
+Resource-scoped grants can't include `*:create` actions (a scope only makes sense for a resource
+that already exists), so `instance:create` always has to stay a global permission, never a
+per-instance one.
+
+E-mail the customer their login (or generate a one-time invite instead with
+`POST /api/v1/invites`, see [Access control](/docs/guides/access-control)) rather than storing the
+temporary password anywhere.
+
+To adjust an existing customer's access later (upgrade/downgrade, add a second instance), use
+`PATCH /api/v1/users/{id}` with the same `resourcePermissions` shape; it replaces the full set of
+resource-scoped grants for that user.
+
+</Step>
+</Steps>

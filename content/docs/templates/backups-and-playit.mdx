@@ -1,0 +1,90 @@
+---
+title: Backups & playit
+description: Declare what can be archived and how tunnels should work.
+---
+
+Two optional blocks round out a production-quality template: backup targets and playit tunnel
+support.
+
+## Backup targets
+
+The `backups` object declares which container paths users can archive:
+
+```json
+"backups": {
+  "enabled": true,
+  "targets": [
+    {
+      "id": "world",
+      "label": "World",
+      "containerPath": "/data/world"
+    },
+    {
+      "id": "full",
+      "label": "Everything",
+      "containerPath": "/data"
+    }
+  ]
+}
+```
+
+<TypeTable
+  type={{
+    enabled: {
+      description:
+        "Whether backups are offered for instances of this template.",
+      type: "boolean",
+      required: true,
+    },
+    targets: {
+      description: "Paths that can be archived. At least one when enabled.",
+      type: "BackupTarget[]",
+      required: true,
+    },
+  }}
+/>
+
+Each target needs an `id` (stable identifier), a human `label`, and an absolute `containerPath`.
+Users pick targets by label when backing up manually or defining
+[backup policies](/docs/guides/backups).
+
+**Design tip:** offer one focused target for the irreplaceable data (the world) and one broad
+target for full recovery (the whole data dir). Focused targets make frequent scheduled backups
+cheap; broad ones make disaster recovery simple.
+
+## Playit tunnels
+
+The `settings.playit` object declares tunnel support:
+
+```json
+"settings": {
+  "playit": {
+    "enabled": true,
+    "protocol": "tcp",
+    "port": 25565
+  }
+}
+```
+
+<TypeTable
+  type={{
+    enabled: {
+      description: "Whether instances of this template offer the Playit tab.",
+      type: "boolean",
+      required: true,
+    },
+    port: {
+      description: "The container port players connect to.",
+      type: "number",
+      required: true,
+    },
+    protocol: {
+      description: "tcp, udp or both. Match what the game actually speaks.",
+      type: "'tcp' | 'udp' | 'both'",
+    },
+  }}
+/>
+
+Pick the protocol carefully: Minecraft Java is `tcp`, Bedrock is `udp`, some games need `both`.
+With this declared, users get one-toggle public addresses; see the
+[playit guide](/docs/guides/playit) for the user-facing flow.

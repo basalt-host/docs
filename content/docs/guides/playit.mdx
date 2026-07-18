@@ -1,0 +1,75 @@
+---
+title: Playit tunnels
+description: Give your server a public address without port forwarding.
+---
+
+The classic self-hosting wall: the server runs great, but your friends can't join because you're
+behind NAT, CGNAT, or a router you're not allowed to touch. Basalt integrates
+[playit.gg](https://playit.gg) tunnels to knock that wall down.
+
+## How it works
+
+playit.gg runs a network of public tunnel servers. Your instance makes an **outbound** connection
+to that network, and players connect to a public playit address that forwards traffic back through
+the tunnel. Because the connection is outbound, no ports need to be opened on your side.
+
+## Enabling a tunnel
+
+Templates opt in to playit support and declare the game port and protocol (TCP, UDP or both). For
+a playit-enabled template:
+
+1. Open the instance's **Playit** tab.
+2. Enable the tunnel.
+3. **Claim it.** playit.gg tunnels start out unclaimed: the tab shows a claim link
+   (`playit.gg/claim/<code>`). Visit it and accept the claim with a playit.gg account
+   (a free one is fine) to activate the tunnel. Until this step is done the tab
+   shows "Awaiting claim", not an error.
+4. **Create the tunnel on playit.gg.** Once claimed, the tab moves to "Provisioning"
+   and shows the local port and protocol Basalt needs (e.g. `127.0.0.1:25565` over
+   `tcp`). Go to playit.gg, find the agent you just claimed, and create a tunnel
+   forwarding to that exact address and protocol. This is a one-time manual step per
+   instance: playit.gg doesn't let Basalt create it for you.
+5. Basalt polls for a matching tunnel automatically (about every 10 seconds) and
+   adopts it as soon as it appears. The tab flips to "Active": copy the public
+   address and share it with your players.
+
+No router config, no dynamic DNS, no VPN mesh to babysit, just one manual step on
+playit.gg's side.
+
+<Callout type="info" title="Skip the manual claim">
+  An admin can set a playit.gg API key in **Settings → General → playit.gg** so
+  every new agent claim is approved automatically, without anyone visiting a claim
+  link. This only affects claim approval, not tunnel creation, which is always a
+  manual step on playit.gg. Get a key from [playit.gg/account](https://playit.gg/account).
+</Callout>
+
+<Callout type="warn" title="Start the instance first">
+  The tunnel needs the instance's container running to attach to it. If you
+  enable playit before starting the instance, it stays in "Error" until you
+  start the instance and hit **Retry** on the Playit tab.
+</Callout>
+
+<Callout type="warn" title="Free-tier limits">
+  playit.gg's free tier caps how many agents a guest account can have, and can
+  require email verification before a tunnel goes live. If a tunnel lands in
+  "Error" after being claimed, the shown message comes directly from playit.gg
+  (over-limit, unverified email, banned, etc.), so check
+  [playit.gg/account](https://playit.gg/account) for the underlying account
+  status. Separately, choosing "both" (combined TCP+UDP) when creating the tunnel
+  on playit.gg's own site may require playit Premium; this shows up as an error on
+  playit.gg's own tunnel-creation form, not in Basalt.
+</Callout>
+
+## When to use what
+
+| Situation                                             | Recommendation                                 |
+| ----------------------------------------------------- | ---------------------------------------------- |
+| Friends on your LAN                                   | Direct connection to the node's local address. |
+| You control the router                                | Port forwarding gives the most direct route.   |
+| CGNAT, dorms, offices, rented boxes without extra IPs | Playit tunnel.                                 |
+
+<Callout type="info" title="Template support">
+  If the Playit tab isn't offered on an instance, its template doesn't declare
+  playit settings. Template authors can add them; see [template
+  authoring](/docs/templates/backups-and-playit).
+</Callout>

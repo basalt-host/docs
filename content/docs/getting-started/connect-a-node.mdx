@@ -1,0 +1,79 @@
+---
+title: Connect a node
+description: Install the Basalt daemon on a machine and register it in the panel.
+---
+
+A **node** is any machine that runs the Basalt daemon: a lightweight agent that receives
+instructions from the backend and drives Docker on that machine. Instances always run on a node,
+so you need at least one.
+
+The node can be the same machine that runs the panel, or a different one entirely.
+
+## 1. Install the daemon
+
+The daemon needs access to the Docker socket of the machine it manages. Use the maintained
+Compose file from the Basalt repository (it's also in the `deploy/` directory if you fetched
+that for the main stack):
+
+```bash
+curl -O https://raw.githubusercontent.com/basalt-host/basalt/main/deploy/docker-compose.daemon.yml
+docker compose -f docker-compose.daemon.yml up -d
+```
+
+<Callout type="warn" title="Do not expose the daemon port">
+  The daemon's only auth is its API key, and holding that key is equivalent to
+  holding the Docker socket: root on the host. Never expose port 8089 to the
+  internet: firewall it so only the backend's address can reach it, or put
+  backend and nodes on a private network.
+</Callout>
+
+## 2. Grab the API key
+
+On first start the daemon generates an API key, stores it in
+`~/.config/basalt/daemon/api.key`, and prints it **once** to its log:
+
+```bash
+docker compose -f docker-compose.daemon.yml logs daemon
+```
+
+```text
+╔══════════════════════════════════════════════════════════╗
+   Daemon API Key (shown once, save it now!)
+   4f1c9a2e8b7d4e5f9a0b1c2d3e4f5a6b
+╚══════════════════════════════════════════════════════════╝
+```
+
+Copy the key. If you lose it, read it back from the key file inside the `daemon_config` volume.
+
+## 3. Register the node in the panel
+
+In the panel, go to **Nodes → Add node** and fill in:
+
+- **Name**: anything that helps you recognise the machine (`homelab-01`).
+- **Address**: where the backend can reach the daemon, e.g. `http://192.168.1.20:8089`.
+- **API key**: the key from the previous step.
+
+Basalt verifies the connection and protocol version, and the node appears with a live status
+badge: `ONLINE`, `OFFLINE`, `UNKNOWN` or `INCOMPATIBLE` (daemon version too old or too new for the
+backend).
+
+<Callout type="info" title="Firewalls">
+  Only the **backend** needs to reach the daemon port (8089 by default). Players
+  never talk to the daemon; they connect to the game server's own port or its
+  playit.gg tunnel.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card
+    title="Deploy your first instance"
+    description="Put that node to work with a Minecraft server."
+    href="/docs/getting-started/first-instance"
+  />
+  <Card
+    title="Nodes in depth"
+    description="Status lifecycle, metrics and multi-node setups."
+    href="/docs/concepts/nodes"
+  />
+</Cards>

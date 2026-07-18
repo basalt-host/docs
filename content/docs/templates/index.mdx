@@ -1,0 +1,87 @@
+---
+title: Writing templates
+description: Turn any dockerized game into a first-class Basalt experience.
+---
+
+If a game runs in a Docker container, it can run on Basalt. A **template** is a single JSON file
+that describes the image to run and the settings UI users configure it with. No plugins, no
+custom code.
+
+Templates are validated against a published JSON Schema, so a decent editor gives you completion
+and inline errors while you write:
+
+```json title="my-game.template.json"
+{
+  "$schema": "https://basalt.host/schemas/template.schema.json",
+  "id": "1c8b21a6-0000-4000-8000-000000000000",
+  "game": "Minecraft",
+  "name": "My Minecraft server",
+  "description": "A minimal example template.",
+  "version": "1.0.0",
+  "author": "you",
+  "logo": "https://example.com/logo.png",
+  "settings": {
+    "versions": ["1.21", "1.20.6"],
+    "categories": [
+      {
+        "id": "general",
+        "label": "General",
+        "description": "Basic server settings",
+        "children": [
+          {
+            "key": "MOTD",
+            "label": "Message of the day",
+            "description": "Shown in the server list.",
+            "kind": "TEXT",
+            "defaultValue": "Welcome!"
+          }
+        ]
+      }
+    ]
+  },
+  "docker": {
+    "image": "itzg/minecraft-server:latest",
+    "environment": [{ "key": "EULA", "value": "TRUE" }]
+  }
+}
+```
+
+That's a complete, deployable template: an identity, one settings category with one field, and a
+Docker image.
+
+## Learning path
+
+<Cards>
+  <Card
+    title="Schema overview"
+    description="Every top-level property and what it's for."
+    href="/docs/templates/schema"
+  />
+  <Card
+    title="Settings & fields"
+    description="Categories, field kinds, conditions and expanding sections."
+    href="/docs/templates/fields"
+  />
+  <Card
+    title="Docker configuration"
+    description="Images, environment and startup commands with placeholders."
+    href="/docs/templates/docker"
+  />
+  <Card
+    title="Backups & playit"
+    description="Declare backup targets and tunnel support."
+    href="/docs/templates/backups-and-playit"
+  />
+  <Card
+    title="Publishing"
+    description="Register templates from JSON or a Git repository."
+    href="/docs/templates/publishing"
+  />
+</Cards>
+
+## Learn from the official templates
+
+The [basalt-host/templates](https://github.com/basalt-host/templates) repository contains the
+official Minecraft and Hytale templates. They exercise nearly every feature of the format
+(conditional fields, expanding sections, backup targets, playit) and are the best reference for
+"how would I express X".

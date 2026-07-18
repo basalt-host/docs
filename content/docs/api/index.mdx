@@ -1,0 +1,79 @@
+---
+title: API reference
+description: Browse and call the same API the panel uses, and build your own automations on top of it.
+---
+
+Every Basalt backend ships with a live, interactive API reference. There's no separate public API
+with a reduced surface: the reference documents the exact routes the web panel itself calls, so
+anything you can do by clicking around, you can also do by calling the API directly.
+
+## Browse it
+
+Point a browser at your backend's address (the same host as `BASALT_API_URL`, or a public domain
+if you've put a reverse proxy in front of the backend container) and open:
+
+```
+{your-backend-url}/scalar
+```
+
+This is a [Scalar](https://scalar.com) UI generated straight from the backend's routes: every
+endpoint, its parameters, request/response schemas, and a "try it" panel to fire requests without
+leaving the browser.
+
+## Fetch the raw spec
+
+The same information is available as a plain OpenAPI 3 document:
+
+```
+{your-backend-url}/docs.json
+```
+
+Use it to generate a typed client (`openapi-typescript`, `openapi-generator`, etc.), import the API
+into Postman or Insomnia, or feed it to your own tooling. Because it's generated from the running
+backend, it always matches the version you have deployed:
+
+```bash
+curl https://your-backend/docs.json -o basalt-openapi.json
+```
+
+<Callout type="info" title="Versioned by your deployment">
+  The reference reflects whatever version of Basalt you're running, not the latest release. Check
+  it against your own instance rather than assuming it matches this docs site.
+</Callout>
+
+## Authenticating requests
+
+Routes are protected the same way the panel protects itself: a bearer JWT obtained by signing in.
+
+```bash
+curl -X POST https://your-backend/api/v1/auth/sign-in \
+  -H "Content-Type: application/json" \
+  -d '{"email": "automation@example.com", "password": "..."}'
+```
+
+The response includes a session token; send it as `Authorization: Bearer <token>` on every
+subsequent request. Give an automation account only the [permissions](/docs/guides/access-control)
+it actually needs (`instance:create`, `node:create`, ...) rather than reusing an owner login, since
+the token will live in server-side code you control.
+
+## What this is good for
+
+Anything that should react to something happening outside Basalt:
+
+- Provision an instance the moment a customer pays, see
+  [Provisioning on payment](/docs/api/provisioning-on-payment).
+- Mirror node/instance state into your own dashboard or status page.
+- Build a CLI, chatops bot, or internal tool against the same API the panel uses.
+
+<Cards>
+  <Card
+    title="Provisioning on payment"
+    description="Wire a payment webhook into the API to create instances automatically."
+    href="/docs/api/provisioning-on-payment"
+  />
+  <Card
+    title="Access control"
+    description="Scope a dedicated automation account down to just what it needs."
+    href="/docs/guides/access-control"
+  />
+</Cards>

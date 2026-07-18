@@ -1,0 +1,34 @@
+---
+title: Live console
+description: Stream server output and send commands from the browser.
+---
+
+Every instance has a **Console** tab that streams the server's output in real time, straight from
+the container on the node. No SSH, no `docker logs -f`: open the tab and the logs are already
+flowing.
+
+## Reading output
+
+The console attaches to the container's output stream through the daemon. You get:
+
+- **Live streaming**: new lines appear as the server prints them.
+- **Scrollback**: recent history is loaded when you open the tab.
+- **Live status**: the instance's state (starting, running, stopping) is reflected around the
+  console, so you can watch a boot or shutdown as it happens.
+
+## Sending commands
+
+Type into the input at the bottom to send commands to the server process: `say`, `op`,
+`whitelist add`, whatever the game supports. Input requires the console permission on that
+instance; users with read-only access can watch but not type.
+
+## Metrics
+
+CPU and memory usage for the container stream alongside the console, so when the server starts
+stuttering you can immediately see whether it's starved for resources or something else is wrong.
+
+<Callout type="info" title="Who can see this?">
+  Console access is a per-instance permission. See [access
+  control](/docs/guides/access-control) to give someone logs-only or full
+  console access.
+</Callout>

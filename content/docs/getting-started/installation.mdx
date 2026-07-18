@@ -1,0 +1,119 @@
+---
+title: Installation
+description: Deploy the Basalt stack with Docker Compose.
+---
+
+Basalt ships as a set of Docker images, orchestrated with Docker Compose. A single machine can run
+the entire stack (panel, backend, database and a node daemon), and you can add more nodes later.
+
+## Prerequisites
+
+- A 64-bit Linux host (macOS and Windows work for evaluation via Docker Desktop)
+- [Docker Engine](https://docs.docker.com/engine/install/) 24+ with the Compose plugin
+- 2 GB of RAM for the platform itself, plus whatever your game servers need
+
+The deployment files are maintained in the `deploy/` directory of the Basalt repository: a
+Compose file for the main stack (panel, backend, SurrealDB, and **surrealkit**, the one-shot
+service that applies the database schema), one for node daemons, and a documented `.env`
+template. Always install from those files rather than hand-writing a Compose file: the stack
+does not work without the schema/seed steps they encode.
+
+## 1. Fetch the deploy files
+
+```bash
+mkdir basalt && cd basalt
+curl -fsSL https://github.com/basalt-host/basalt/archive/refs/heads/main.tar.gz \
+  | tar xz --strip-components=2 "basalt-main/deploy"
+```
+
+This gives you `docker-compose.yml`, `docker-compose.daemon.yml`, `.env.example`,
+`UPGRADING.md`, and the `database/` directory (schema, seed, and rollout manifests; the
+`surrealkit` service mounts it).
+
+## 2. Configure secrets
+
+Copy the template and fill in **every** required value; each one is documented inline:
+
+```bash
+cp .env.example .env
+```
+
+The required values are the panel's public URL (`BASALT_PUBLIC_URL` +
+`BASALT_PANEL_HOST`), the SurrealDB root credentials (`SURREAL_USERNAME` /
+`SURREAL_PASSWORD`), the session-token secret (`SURREAL_JWT_SECRET`), and the
+at-rest encryption key (`BACKUP_ENCRYPTION_KEY`). Generate the two secrets with
+`openssl rand -base64 48`.
+
+<Callout type="error" title="Never ship dev defaults">
+  `SURREAL_JWT_SECRET` signs every session in your panel and
+  `BACKUP_ENCRYPTION_KEY` protects backup credentials and platform secrets at
+  rest. The backend refuses to boot with the dev database credentials outside
+  development, so set unique random values before exposing Basalt to a network.
+</Callout>
+
+## 3. Start the stack
+
+```bash
+docker compose up -d
+```
+
+One command does everything, in order: SurrealDB comes up, a one-shot pipeline applies the
+database schema (`surrealkit`), creates the migration-tracking tables (`surrealkit-setup`) and
+seeds the default roles and permissions (`surrealkit-seed`), and only then do the backend and
+panel start. Every step is idempotent, so the same command is also how you apply upgrades later.
+
+If the stack doesn't come up, run `docker compose ps -a`: each pipeline step must show
+`Exited (0)`, and the logs of the failed step will say why.
+
+Once the containers are healthy, open [http://localhost:3000](http://localhost:3000). You'll be
+greeted by the first-run setup.
+
+## Upgrading
+
+Upgrades follow the same shape: pull new images, re-run the schema sync and the seed, apply any
+new rollout manifests, restart. The authoritative step-by-step list ships with the deploy
+files: see `UPGRADING.md` in the directory you fetched (or
+[on GitHub](https://github.com/basalt-host/basalt/blob/main/deploy/UPGRADING.md)).
+
+## Environment reference
+
+Every configuration option of the backend can be set through environment variables:
+
+| Variable                                       | Default                      | Purpose                                                                         |
+| ---------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------- |
+| `APPLICATION_PORT`                             | `8080`                       | Backend HTTP port.                                                              |
+| `SURREAL_URL`                                  | `ws://localhost:8000`        | SurrealDB connection URL.                                                       |
+| `SURREAL_NAMESPACE` / `SURREAL_DATABASE`       | `main` / `main`              | Database namespace/name.                                                        |
+| `SURREAL_USERNAME` / `SURREAL_PASSWORD`        | `basalt` / `basalt`          | Database credentials.                                                           |
+| `SURREAL_JWT_SECRET`                           | dev value                    | Session token signing secret; **must** match the web app's `BASALT_JWT_SECRET`. |
+| `BACKUP_ENCRYPTION_KEY`                        | dev value                    | Key used to encrypt backup archives.                                            |
+| `MAIL_PROVIDER`                                | `log`                        | `log` prints outgoing mail to the backend log; `resend` sends real e-mail.      |
+| `RESEND_API_KEY`                               | (none)                       | API key when `MAIL_PROVIDER=resend`.                                            |
+| `MAIL_FROM`                                    | `Basalt <noreply@localhost>` | From address for outgoing mail.                                                 |
+| `BASALT_PUBLIC_URL`                            | `http://localhost:3000`      | Public URL of the web panel.                                                    |
+| `BASALT_ADMIN_EMAIL` / `BASALT_ADMIN_PASSWORD` | (none)                       | Auto-create the owner account on a fresh database.                              |
+| `CORS_ALLOWED_ORIGINS`                         | dev value                    | Origins allowed to call the API.                                                |
+| `UPLOAD_MAX_BYTES`                             | `2147483648`                 | Maximum file upload size (2 GiB).                                               |
+
+And the web panel:
+
+| Variable            | Default                 | Purpose                                                    |
+| ------------------- | ----------------------- | ---------------------------------------------------------- |
+| `BASALT_API_URL`    | `http://localhost:8080` | Base URL of the backend API.                               |
+| `BASALT_JWT_SECRET` | dev value               | Verifies session cookies; must equal `SURREAL_JWT_SECRET`. |
+| `BASALT_PUBLIC_URL` | `http://localhost:3000` | Used to build links in outgoing e-mails.                   |
+
+## Next steps
+
+<Cards>
+  <Card
+    title="First run"
+    description="Create the owner account and take a look around."
+    href="/docs/getting-started/first-run"
+  />
+  <Card
+    title="Connect a node"
+    description="Install the daemon so Basalt has somewhere to run servers."
+    href="/docs/getting-started/connect-a-node"
+  />
+</Cards>

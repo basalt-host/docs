@@ -1,0 +1,82 @@
+---
+title: Your first instance
+description: Deploy a Minecraft server from template to join address.
+---
+
+With a node connected, you're three clicks away from a running server. This walkthrough uses the
+official Minecraft template; any other template works the same way.
+
+<Steps>
+<Step>
+
+## Pick a template
+
+Go to **Instances → New instance**. Choose the node to run on and pick the
+**Minecraft (itzg/docker-minecraft-server)** template.
+
+Templates define everything Basalt needs to know about a game: the Docker image, supported
+versions, environment variables and the settings form you're about to see.
+
+</Step>
+<Step>
+
+## Configure the server
+
+The template renders a full settings form: server type, version, memory, world options,
+whitelist and more. Every field has a sensible default, so for a first run you only need:
+
+- **Name**: what the instance is called in the panel.
+- **Version**: the Minecraft version to run.
+- **Memory**: how much RAM the container may use.
+
+Anything you set here becomes environment configuration for the container. You can change most
+settings later and re-deploy.
+
+</Step>
+<Step>
+
+## Deploy
+
+Hit **Deploy**. The daemon pulls the Docker image, creates the container with your configuration
+and starts it. You can watch progress live; the instance page shows status transitions and the
+console starts streaming as soon as the server boots.
+
+</Step>
+<Step>
+
+## Let players in
+
+Players need a way to reach the server:
+
+- **Same network**: connect to the node's LAN address and the server port.
+- **Port forwarding**: forward the game port on your router to the node.
+- **Playit tunnel**: no router access needed. Open the instance's **Playit** tab, enable the
+  tunnel and share the generated address. See the [playit guide](/docs/guides/playit).
+
+</Step>
+</Steps>
+
+## Where to next
+
+<Cards>
+  <Card
+    title="Live console"
+    description="Watch logs and run server commands from the browser."
+    href="/docs/guides/console"
+  />
+  <Card
+    title="Files"
+    description="Browse and edit the server's files safely."
+    href="/docs/guides/files"
+  />
+  <Card
+    title="Backups"
+    description="Protect your world before someone burns it down."
+    href="/docs/guides/backups"
+  />
+  <Card
+    title="Invite your friends"
+    description="Share access with roles and permissions."
+    href="/docs/guides/access-control"
+  />
+</Cards>

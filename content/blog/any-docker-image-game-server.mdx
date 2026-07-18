@@ -1,0 +1,87 @@
+---
+title: Turn any Docker image into a deployable game server
+description: Templates are single JSON files that give any containerized game a real settings UI. Here is how they work.
+date: 2026-06-20
+tags: [guide, templates]
+---
+
+Basalt ships with official templates for Minecraft and Hytale, but the template system is not
+limited to them. If a game (or any service) runs in a Docker container, you can teach Basalt to
+deploy it, with a proper settings form, in a single JSON file. No plugins, no custom code.
+
+## Anatomy of a template
+
+A template answers four questions:
+
+1. **What runs?** A Docker image, an optional startup command, and environment variables.
+2. **What can the user configure?** Categories of fields: text inputs, selects, sliders, memory
+   pickers, checkboxes and more. Field values flow into the container as environment variables.
+3. **What should the file browser show?** A root folder, plus read-only and hidden paths, so
+   users see their world files and not the engine internals.
+4. **What deserves protection?** Backup targets and, optionally, a playit tunnel configuration.
+
+Here is a minimal but real example for a hypothetical game image:
+
+```json
+{
+  "id": "8b1c2f3a-0000-4000-8000-000000000000",
+  "game": "Veloren",
+  "name": "Veloren Server",
+  "description": "Multiplayer voxel RPG server.",
+  "version": "1.0.0",
+  "author": "you",
+  "settings": {
+    "categories": [
+      {
+        "name": "General",
+        "fields": [
+          {
+            "type": "TEXT",
+            "label": "Server name",
+            "env": "SERVER_NAME",
+            "default": "My Veloren Server"
+          },
+          {
+            "type": "MEM",
+            "label": "Memory limit",
+            "env": "MEMORY",
+            "default": "2G"
+          }
+        ]
+      }
+    ]
+  },
+  "docker": {
+    "image": "veloren/server:latest",
+    "environment": ["SERVER_NAME", "MEMORY"]
+  }
+}
+```
+
+Register that JSON in **Settings → Templates** and "Veloren Server" appears in the deploy flow
+with a generated form.
+
+<MediaPlaceholder
+  label="Template deploy flow screencast"
+  hint="From pasting JSON to the generated settings form"
+/>
+
+## The parts that make it feel native
+
+Two features push templates beyond "env vars with labels":
+
+- **Conditional fields.** An `expand` field shows child fields only when a condition holds, so
+  "Whitelist players" only appears when "Enable whitelist" is on. Forms stay short for simple
+  setups and complete for advanced ones.
+- **Startup command placeholders.** The `startupCommand` can reference field values with
+  `{{ENV_NAME}}` placeholders, for images that take flags instead of environment variables.
+
+## Version it like code
+
+Templates registered from a **Git repository** stay versioned: update the repo, refresh in the
+panel, and redeploy when ready. Basalt snapshots the exact template content each instance was
+deployed with, so updating a template never silently changes a running server.
+
+Ready to write one? The [template authoring guide](/docs/templates) covers every field type and
+the full schema, and the [official templates](https://github.com/basalt-host/templates) are good
+reference reading.

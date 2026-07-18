@@ -1,0 +1,167 @@
+---
+title: Settings & fields
+description: Categories, field kinds, conditions and expanding sections.
+---
+
+The `settings.categories` tree is what users see when they configure an instance. Categories group
+fields; fields map to environment variables on the container.
+
+## Categories
+
+```json
+{
+  "id": "world",
+  "label": "World",
+  "description": "World generation and gameplay",
+  "children": [/* fields or nested categories */]
+}
+```
+
+Categories nest: `children` accepts both fields and further categories, so you can build
+sections and subsections.
+
+## Fields
+
+Every field connects a UI control to an environment variable:
+
+```json
+{
+  "key": "MAX_PLAYERS",
+  "label": "Max players",
+  "description": "How many players can join at once.",
+  "kind": "NUMBER",
+  "defaultValue": 20,
+  "min": 1,
+  "max": 200
+}
+```
+
+<TypeTable
+  type={{
+    key: {
+      description: "The environment variable this field sets on the container.",
+      type: "string",
+      required: true,
+    },
+    label: {
+      description: "Label shown in the form.",
+      type: "string",
+      required: true,
+    },
+    description: {
+      description: "Help text under the field. May be null.",
+      type: "string | null",
+      required: true,
+    },
+    kind: {
+      description: "Which control to render; see the table below.",
+      type: "FieldKind",
+      required: true,
+    },
+    defaultValue: {
+      description: "Pre-filled value.",
+      type: "any",
+    },
+    placeholder: {
+      description: "Placeholder text for empty inputs.",
+      type: "string",
+    },
+    options: {
+      description:
+        "Choices for SELECT / COMBOBOX kinds: { value, label, expand? }.",
+      type: "Option[]",
+    },
+    min: { description: "Minimum for numeric kinds.", type: "number" },
+    max: { description: "Maximum for numeric kinds.", type: "number" },
+    step: {
+      description: "Step for sliders/numbers (must be > 0).",
+      type: "number",
+    },
+    unit: { description: 'Unit suffix, e.g. "MB".', type: "string" },
+    required: {
+      description: "Whether the field must be filled.",
+      type: "boolean",
+    },
+    enable: {
+      description:
+        "Condition on another value that enables/disables this field.",
+      type: "Condition",
+    },
+    expand: {
+      description:
+        "Extra categories/fields revealed based on this field's value.",
+      type: "Expand",
+    },
+  }}
+/>
+
+## Field kinds
+
+| Kind                             | Renders as                                             |
+| -------------------------------- | ------------------------------------------------------ |
+| `TEXT` / `STRING`                | Single-line text input.                                |
+| `TEXTAREA`                       | Multi-line text.                                       |
+| `NUMBER`                         | Numeric input with optional `min`/`max`/`step`/`unit`. |
+| `SLIDER`                         | Range slider.                                          |
+| `MEM`                            | Memory picker (e.g. for JVM heap / container memory).  |
+| `BOOLEAN`                        | Toggle.                                                |
+| `SELECT`                         | Dropdown over `options`.                               |
+| `COMBOBOX`                       | Searchable dropdown over `options`.                    |
+| `LIST`                           | Editable list of values.                               |
+| `PASSWORD`                       | Masked input.                                          |
+| `DATE` / `DATETIME` / `TIMEZONE` | Date, date-time and timezone pickers.                  |
+| `READ_ONLY`                      | Displayed but not editable.                            |
+
+## Conditions
+
+`enable` gates a field on another value. A condition is one of:
+
+```json
+{ "equals": "PAPER" }
+{ "notEquals": false }
+{ "in": ["FABRIC", "QUILT"] }
+```
+
+## Expanding sections
+
+`expand` reveals additional fields or whole categories when a value matches. Use it to keep the
+form small until a choice makes more options relevant:
+
+```json
+{
+  "key": "TYPE",
+  "label": "Server type",
+  "description": "Which server software to run.",
+  "kind": "SELECT",
+  "options": [
+    { "value": "VANILLA", "label": "Vanilla" },
+    {
+      "value": "FORGE",
+      "label": "Forge",
+      "expand": {
+        "children": [
+          {
+            "key": "FORGE_VERSION",
+            "label": "Forge version",
+            "description": "Leave empty for the recommended build.",
+            "kind": "TEXT"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+Expansion can also hang off the field itself with a `when` condition:
+
+```json
+"expand": {
+  "when": { "equals": true },
+  "children": [ /* shown only when the toggle is on */ ]
+}
+```
+
+The official Minecraft template combines these heavily: selecting a mod platform expands its
+version fields, enabling the whitelist expands the player list, and so on. It's the best worked
+example of a large, humane settings form.

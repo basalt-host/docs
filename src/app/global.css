@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/*
+ * Basalt brand: zinc neutrals with the lime accent used by the product UI
+ * (primary buttons are lime-300 with lime-950 text). Values mirror the
+ * Tailwind lime scale so docs and panel stay in sync.
+ */
+:root {
+  /* lime-700: the darkest lime that keeps the hue while passing AA (4.99:1) on white */
+  --color-fd-primary: oklch(0.532 0.157 131.589);
+}
+
+.dark {
+  --color-fd-primary: oklch(0.841 0.238 128.85); /* lime-400 */
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}

@@ -1,0 +1,66 @@
+---
+title: That old PC in your closet is a game server
+description: A weekend project. Install Linux and Docker, deploy Basalt, and give your spare hardware a second life.
+date: 2026-06-05
+tags: [guide, getting-started]
+---
+
+Hardware upgrade cycles leave almost everyone with a spare machine: last generation's gaming PC,
+an office desktop rescued from recycling, a laptop with a broken screen. Any of them beats the
+specs of a mid-tier rented game server, and you already own it. Here is the weekend-project
+version of turning it into your group's server box.
+
+## What you need
+
+- A machine with 8 GB+ of RAM (4 GB works for small vanilla servers) and an SSD if possible.
+  Minecraft loves single-core speed and disk I/O more than core count.
+- A wired ethernet connection to your router. Wi-Fi adds jitter your players will feel.
+- A USB stick to install Linux from.
+
+## Step 1: install Linux
+
+Any mainstream distro works; Ubuntu Server or Debian are safe picks with years of guides behind
+them. During install, enable the OpenSSH server so you can manage the box from your main
+computer and put the monitor back in the closet.
+
+Two quality-of-life settings while you're there: give the machine a static IP on your LAN (or a
+DHCP reservation in the router), and configure the BIOS to power on after power loss.
+
+## Step 2: install Docker
+
+Basalt runs entirely in Docker, so this is the only dependency:
+
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+```
+
+Log out and back in so the group change applies, then check `docker ps` runs without sudo.
+
+## Step 3: deploy Basalt
+
+Follow the [installation guide](/docs/getting-started/installation): a compose file, a few
+secrets in an `.env` file, and `docker compose up -d`. A few minutes later the panel is at
+`http://<the-machine's-ip>:3000` from any browser in your house.
+
+<MediaPlaceholder
+  label="First-run screencast"
+  hint="From docker compose up to logged-in dashboard"
+/>
+
+## Step 4: first server, first friends
+
+From the panel: [connect the machine as a node](/docs/getting-started/connect-a-node), deploy a
+Minecraft instance from the official template, and enable a
+[playit tunnel](/docs/guides/playit) so friends can join without you touching router settings.
+Send them the public address; you're live.
+
+## A note on power and noise
+
+A repurposed desktop idles around 30 to 60 watts. If it will run 24/7, that's real money in
+some countries, so consider suspending instances when nobody plays (stopping a server in Basalt
+is one click, and worlds persist). Also check the box for dust before locking it in a closet:
+future-you will not remember to.
+
+Total cost so far: zero, minus the electricity. That's the entire pitch for self-hosting, and
+why we built Basalt around hardware you already own.

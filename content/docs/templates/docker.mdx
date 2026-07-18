@@ -1,0 +1,78 @@
+---
+title: Docker configuration
+description: Images, environment variables and startup commands with placeholders.
+---
+
+The `docker` object tells Basalt what to actually run.
+
+<TypeTable
+  type={{
+    image: {
+      description:
+        'The Docker image to run, e.g. "itzg/minecraft-server:latest".',
+      type: "string",
+      required: true,
+    },
+    environment: {
+      description:
+        "Baseline environment variables: { key, value?, description? }.",
+      type: "EnvVar[]",
+    },
+    startupCommand: {
+      description:
+        "Shell command run instead of the image CMD. Supports {{ENV_KEY}} placeholders.",
+      type: "string",
+    },
+  }}
+/>
+
+## How environment is assembled
+
+The container's environment is merged from, in order:
+
+1. **Template `docker.environment`**: fixed baseline values (e.g. `EULA=TRUE`).
+2. **Field values**: every settings field writes its value to its `key`.
+3. **Instance overrides**: anything the user changes on the instance's Environment tab.
+
+Later layers win, so fields override the baseline and instance overrides beat both.
+
+```json
+"docker": {
+  "image": "itzg/minecraft-server:latest",
+  "environment": [
+    { "key": "EULA", "value": "TRUE", "description": "Mojang EULA acceptance." },
+    { "key": "TYPE", "value": "VANILLA" }
+  ]
+}
+```
+
+## Startup commands
+
+Most images have a sensible `CMD` and don't need this. When you do need to control the process,
+`startupCommand` replaces the image's command and can reference any merged environment value with
+`{{KEY}}` placeholders:
+
+```json
+"docker": {
+  "image": "eclipse-temurin:21-jre",
+  "startupCommand": "java -Xms{{MEMORY}} -Xmx{{MEMORY}} -jar server.jar --port {{PORT}}",
+  "environment": [
+    { "key": "MEMORY", "value": "4G" },
+    { "key": "PORT", "value": "25565" }
+  ]
+}
+```
+
+Placeholders are resolved against the merged environment at deploy time, and instances may
+override the command entirely if their operator needs to.
+
+## Choosing images
+
+A few properties make an image a good template citizen:
+
+- **Configurable via environment**: that's the interface templates speak.
+- **A stable data directory**: one folder to point the file browser and backup targets at.
+- **Graceful shutdown on SIGTERM**: so stop/restart don't corrupt saves.
+
+Community images like `itzg/minecraft-server` exist for many games and are usually a better base
+than rolling your own.

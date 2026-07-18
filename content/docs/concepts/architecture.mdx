@@ -1,0 +1,64 @@
+---
+title: Architecture
+description: How the panel, backend, daemon and database fit together.
+---
+
+Basalt splits responsibilities across four components. Understanding the split makes everything
+else (nodes, permissions, networking) easier to reason about.
+
+```
+┌──────────────┐     HTTP      ┌──────────────┐    WebSocket    ┌──────────────┐
+│   Web panel   │ ───────────▶ │   Backend    │ ──────────────▶ │  SurrealDB   │
+│   (Next.js)   │              │    (API)     │                 │  (database)  │
+└──────────────┘              └──────┬───────┘                 └──────────────┘
+                                      │ RPC (per-node API key)
+                       ┌──────────────┼──────────────┐
+                       ▼              ▼              ▼
+                 ┌──────────┐   ┌──────────┐   ┌──────────┐
+                 │  Daemon  │   │  Daemon  │   │  Daemon  │      one per node
+                 └────┬─────┘   └────┬─────┘   └────┬─────┘
+                      │ Docker socket│               │
+                 ┌────▼─────┐   ┌────▼─────┐   ┌────▼─────┐
+                 │ instance │   │ instance │   │ instance │      game servers
+                 │containers│   │containers│   │containers│
+                 └──────────┘   └──────────┘   └──────────┘
+```
+
+## Web panel
+
+The Next.js application you use in the browser. It renders dashboards, forms, the console and the
+file browser, and talks exclusively to the backend API. Sessions are cookie-based JWTs: signed by
+the database layer, verified by both the backend and the panel, which is why all three share one
+JWT secret.
+
+## Backend
+
+The brain. It owns:
+
+- **Domain data**: users, roles, permissions, invites, templates, instances, nodes, backup
+  policies, all persisted in SurrealDB.
+- **Orchestration**: deciding what should run where, and instructing daemons to make it so.
+- **Background workers**: node health checks, scheduled backups, status reconciliation.
+
+## Daemon
+
+A small agent installed on every node. It exposes an RPC API (authenticated with a per-node API
+key) and translates backend instructions into Docker operations: pull image, create container,
+start, stop, stream logs, read files, archive a backup target.
+
+The daemon is deliberately dumb: it holds no business logic and no database connection. If the
+backend is down, running game servers keep running; the panel just can't manage them until it's
+back.
+
+## SurrealDB
+
+The single database behind the backend. It also signs session tokens at authentication time,
+which the backend and panel verify with the shared secret.
+
+## What this means in practice
+
+- **Players never touch Basalt.** They connect to the game container's port (or its playit
+  tunnel). Panel, backend and daemon can all live on private networks.
+- **Nodes are expendable.** A node going offline doesn't take the panel down, and vice versa.
+- **One machine is fine.** All four components plus a daemon happily share a single host for a
+  small setup.
